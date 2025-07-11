@@ -132,6 +132,8 @@ Build a comprehensive networking app that helps users map their professional con
 **Authentication Enhancement**
 - 🔲 Implement Supabase authentication system
 - 🔲 Add social login (Google, LinkedIn, GitHub)
+- 🔲 Email verification system (SendGrid/Resend integration)
+- 🔲 Password reset via email
 - 🔲 Multi-factor authentication (MFA)
 - 🔲 Advanced user management and roles
 
