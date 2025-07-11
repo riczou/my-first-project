@@ -19,6 +19,7 @@ requests==2.31.0
 # Data validation
 pydantic==2.5.0
 pydantic-settings==2.0.3
+email-validator==2.1.0
 
 # Background tasks
 celery==5.3.4
