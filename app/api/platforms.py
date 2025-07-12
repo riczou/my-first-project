@@ -105,3 +105,57 @@ def get_platform_status(
         "active": account.is_active if account else False,
         "last_sync": account.last_sync_at if account else None
     }
+
+@router.post("/admin/seed")
+def seed_platforms(db: Session = Depends(get_db)):
+    """Admin endpoint to seed initial platform data"""
+    
+    # Check if platforms already exist
+    existing_count = db.query(Platform).count()
+    if existing_count > 0:
+        return {
+            "message": f"Platforms already exist ({existing_count} found)",
+            "platforms_created": 0
+        }
+    
+    # Create initial platforms
+    platforms_data = [
+        {
+            "name": "LinkedIn",
+            "base_url": "https://www.linkedin.com",
+            "is_active": True,
+            "scraping_enabled": True
+        },
+        {
+            "name": "Facebook", 
+            "base_url": "https://www.facebook.com",
+            "is_active": True,
+            "scraping_enabled": False
+        },
+        {
+            "name": "Twitter",
+            "base_url": "https://www.twitter.com", 
+            "is_active": True,
+            "scraping_enabled": False
+        },
+        {
+            "name": "Instagram",
+            "base_url": "https://www.instagram.com",
+            "is_active": True,
+            "scraping_enabled": False
+        }
+    ]
+    
+    created_platforms = []
+    for platform_data in platforms_data:
+        platform = Platform(**platform_data)
+        db.add(platform)
+        created_platforms.append(platform_data["name"])
+    
+    db.commit()
+    
+    return {
+        "message": f"Successfully created {len(created_platforms)} platforms",
+        "platforms_created": len(created_platforms),
+        "platforms": created_platforms
+    }
