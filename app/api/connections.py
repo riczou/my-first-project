@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+import csv
+import io
 from ..core.database import get_db
 from ..models.user import User
 from ..models.connection import Connection
@@ -11,10 +13,20 @@ router = APIRouter()
 
 @router.get("/", response_model=List[ConnectionResponse])
 def read_connections(
+    company: Optional[str] = Query(None, description="Filter by company name"),
+    role: Optional[str] = Query(None, description="Filter by job title/role"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    connections = db.query(Connection).filter(Connection.user_id == current_user.id).all()
+    query = db.query(Connection).filter(Connection.user_id == current_user.id)
+    
+    if company:
+        query = query.filter(Connection.connection_company.ilike(f"%{company}%"))
+    
+    if role:
+        query = query.filter(Connection.connection_title.ilike(f"%{role}%"))
+    
+    connections = query.all()
     return connections
 
 @router.post("/", response_model=ConnectionResponse)
@@ -179,6 +191,106 @@ def import_connections(
         "total_imported": imported_count,
         "platforms": import_results
     }
+
+@router.post("/upload-csv")
+def upload_csv_connections(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Upload connections from CSV file"""
+    
+    # Validate file type
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be a CSV file"
+        )
+    
+    try:
+        # Read CSV content
+        content = file.file.read()
+        csv_data = content.decode('utf-8')
+        csv_reader = csv.DictReader(io.StringIO(csv_data))
+        
+        imported_count = 0
+        errors = []
+        
+        for row_num, row in enumerate(csv_reader, start=2):  # start=2 because row 1 is header
+            try:
+                # Map CSV columns to our fields (flexible mapping)
+                name = _get_csv_value(row, ['name', 'full_name', 'contact_name', 'first_name'])
+                if not name and 'first_name' in row and 'last_name' in row:
+                    name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip()
+                
+                company = _get_csv_value(row, ['company', 'organization', 'employer', 'current_company'])
+                title = _get_csv_value(row, ['title', 'position', 'job_title', 'role'])
+                email = _get_csv_value(row, ['email', 'email_address'])
+                location = _get_csv_value(row, ['location', 'city', 'address'])
+                profile_url = _get_csv_value(row, ['profile_url', 'linkedin_url', 'url', 'link'])
+                
+                # Skip if no name
+                if not name:
+                    errors.append(f"Row {row_num}: Missing name")
+                    continue
+                
+                # Check if connection already exists
+                existing = db.query(Connection).filter(
+                    Connection.user_id == current_user.id,
+                    Connection.connection_name == name
+                ).first()
+                
+                if existing:
+                    continue  # Skip duplicates
+                
+                # Create new connection
+                new_connection = Connection(
+                    user_id=current_user.id,
+                    platform_id=None,  # CSV import doesn't have platform
+                    connection_name=name,
+                    connection_profile_url=profile_url or "",
+                    connection_title=title or "",
+                    connection_company=company or "",
+                    connection_location=location or "",
+                    relationship_strength=3,  # Default value
+                    mutual_connections_count=0  # Not available in CSV
+                )
+                
+                db.add(new_connection)
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+                continue
+        
+        db.commit()
+        
+        return {
+            "message": f"Successfully imported {imported_count} connections from CSV",
+            "imported_count": imported_count,
+            "errors": errors[:10] if errors else [],  # Return max 10 errors
+            "total_errors": len(errors)
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error processing CSV file: {str(e)}"
+        )
+    finally:
+        file.file.close()
+
+def _get_csv_value(row, possible_keys):
+    """Get value from CSV row using multiple possible column names"""
+    for key in possible_keys:
+        # Try exact match first
+        if key in row and row[key]:
+            return row[key].strip()
+        # Try case-insensitive match
+        for actual_key in row.keys():
+            if actual_key.lower() == key.lower() and row[actual_key]:
+                return row[actual_key].strip()
+    return None
 
 def _simulate_linkedin_import(first_name: str, last_name: str):
     """Simulate LinkedIn connections import with realistic professional data"""

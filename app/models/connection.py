@@ -9,7 +9,7 @@ class Connection(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    platform_id = Column(Integer, ForeignKey("platforms.id"), nullable=False)
+    platform_id = Column(Integer, ForeignKey("platforms.id"), nullable=True)
     connection_name = Column(String, nullable=False)
     connection_profile_url = Column(String)
     connection_title = Column(String)
