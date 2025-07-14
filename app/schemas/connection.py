@@ -14,7 +14,7 @@ class ConnectionBase(BaseModel):
 
 
 class ConnectionCreate(ConnectionBase):
-    platform_id: int
+    platform_id: Optional[int] = None
 
 
 class ConnectionUpdate(BaseModel):
@@ -30,7 +30,7 @@ class ConnectionUpdate(BaseModel):
 class ConnectionResponse(ConnectionBase):
     id: int
     user_id: int
-    platform_id: int
+    platform_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     
