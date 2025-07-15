@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..core.database import Base
@@ -17,10 +17,23 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
+    
+    # Subscription info
+    subscription_tier = Column(String, default="free")  # free, professional, executive, enterprise
+    subscription_status = Column(String, default="active")  # active, cancelled, expired
+    last_recommendation_sent = Column(DateTime(timezone=True))
+    referral_code = Column(String, unique=True, nullable=True)
     
     # Relationships
     platform_accounts = relationship("UserPlatformAccount", back_populates="user")
     connections = relationship("Connection", back_populates="user")
+    resumes = relationship("Resume", back_populates="user")
+    subscription = relationship("Subscription", back_populates="user", uselist=False)
+    referrals_made = relationship("Referral", foreign_keys="Referral.referrer_id", back_populates="referrer")
+    referrals_received = relationship("Referral", foreign_keys="Referral.referred_user_id", back_populates="referred_user")
+    referral_stats = relationship("ReferralStats", back_populates="user", uselist=False)
+    network_analytics = relationship("NetworkAnalytics", back_populates="user", uselist=False)
 
 
 class Platform(Base):

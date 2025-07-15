@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal, engine
-from app.models.user import Platform
+from app.models.user import Platform, User
 from app.core.database import Base
+from app.core.security import get_password_hash
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -51,7 +52,36 @@ def seed_platforms():
     print(f"Created {len(platforms)} platforms")
     db.close()
 
+def seed_admin_user():
+    """Create an admin user for dashboard access"""
+    db: Session = SessionLocal()
+    
+    # Check if admin already exists
+    admin_user = db.query(User).filter(User.is_admin == True).first()
+    if admin_user:
+        print("Admin user already exists")
+        db.close()
+        return
+    
+    # Create admin user
+    admin = User(
+        email="admin@networkingapp.com",
+        username="admin",
+        first_name="Admin",
+        last_name="User",
+        password_hash=get_password_hash("admin123"),
+        is_admin=True,
+        is_active=True,
+        is_verified=True
+    )
+    
+    db.add(admin)
+    db.commit()
+    print("Created admin user (username: admin, password: admin123)")
+    db.close()
+
 if __name__ == "__main__":
     print("Seeding database with initial data...")
     seed_platforms()
+    seed_admin_user()
     print("Database seeding completed!")

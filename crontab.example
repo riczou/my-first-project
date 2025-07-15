@@ -1,0 +1,105 @@
+# ConnectMe Platform Cron Jobs
+# Copy this to your crontab with: crontab crontab.example
+# Edit paths to match your server setup
+
+# ============================================================================
+# DATA PROCESSING & DISCOVERY
+# ============================================================================
+
+# Daily network health calculation (2:00 AM)
+0 2 * * * cd /path/to/networking-app-backend && python3 scripts/network_health_calculator.py
+
+# Daily connection recommendations (9:00 AM)
+0 9 * * * cd /path/to/networking-app-backend && python3 scripts/daily_recommendations.py
+
+# Update subscription statuses (every 30 minutes)
+*/30 * * * * cd /path/to/networking-app-backend && python3 scripts/subscription_checker.py
+
+# Discover new potential connections (3:00 AM daily)
+0 3 * * * cd /path/to/networking-app-backend && python3 scripts/discovery_engine.py
+
+# Update company data and job listings (4:00 AM daily)
+0 4 * * * cd /path/to/networking-app-backend && python3 scripts/update_company_data.py
+
+# ============================================================================
+# USER ENGAGEMENT & NOTIFICATIONS
+# ============================================================================
+
+# Send weekly analytics summary (Monday 8:00 AM)
+0 8 * * 1 cd /path/to/networking-app-backend && python3 scripts/weekly_reports.py
+
+# Referral program reminders (Wednesday 10:00 AM)
+0 10 * * 3 cd /path/to/networking-app-backend && python3 scripts/referral_reminders.py
+
+# Re-engage inactive users (every 3 days at 11:00 AM)
+0 11 */3 * * cd /path/to/networking-app-backend && python3 scripts/reactivate_users.py
+
+# Send trending connections alerts (daily 6:00 PM)
+0 18 * * * cd /path/to/networking-app-backend && python3 scripts/trending_alerts.py
+
+# ============================================================================
+# SYSTEM MAINTENANCE
+# ============================================================================
+
+# Database backup (daily 1:00 AM)
+0 1 * * * cd /path/to/networking-app-backend && python3 scripts/backup_database.py
+
+# Clean up temporary files and logs (Sunday 2:00 AM)
+0 2 * * 0 cd /path/to/networking-app-backend && python3 scripts/cleanup_system.py
+
+# Monitor API usage and costs (every 6 hours)
+0 */6 * * * cd /path/to/networking-app-backend && python3 scripts/monitor_api_usage.py
+
+# Update search indexes (daily 5:00 AM)
+0 5 * * * cd /path/to/networking-app-backend && python3 scripts/update_search_indexes.py
+
+# ============================================================================
+# ANALYTICS & REPORTING
+# ============================================================================
+
+# Collect platform metrics (every 5 minutes)
+*/5 * * * * cd /path/to/networking-app-backend && python3 scripts/collect_metrics.py
+
+# Generate revenue reports (1st of month, 7:00 AM)
+0 7 1 * * cd /path/to/networking-app-backend && python3 scripts/revenue_reports.py
+
+# Monthly user engagement analysis (1st of month, 9:00 AM)
+0 9 1 * * cd /path/to/networking-app-backend && python3 scripts/monthly_analytics.py
+
+# Generate referral leaderboard (daily 7:00 PM)
+0 19 * * * cd /path/to/networking-app-backend && python3 scripts/update_leaderboard.py
+
+# ============================================================================
+# EXTERNAL DATA SYNC
+# ============================================================================
+
+# Sync LinkedIn API data (daily 6:00 AM)
+0 6 * * * cd /path/to/networking-app-backend && python3 scripts/sync_linkedin_data.py
+
+# Update GitHub collaboration data (daily 7:00 AM)
+0 7 * * * cd /path/to/networking-app-backend && python3 scripts/sync_github_data.py
+
+# Refresh company news and updates (every 4 hours)
+0 */4 * * * cd /path/to/networking-app-backend && python3 scripts/company_news_sync.py
+
+# Sync academic paper collaborations (weekly, Sunday 3:00 AM)
+0 3 * * 0 cd /path/to/networking-app-backend && python3 scripts/sync_academic_data.py
+
+# ============================================================================
+# LOGS AND MONITORING
+# ============================================================================
+
+# All cron job logs are stored in /var/log/connectme/
+# Make sure to set up log rotation to prevent disk space issues
+
+# Example log rotation setup:
+# Add to /etc/logrotate.d/connectme:
+# /var/log/connectme/*.log {
+#     daily
+#     rotate 30
+#     compress
+#     delaycompress
+#     missingok
+#     notifempty
+#     create 644 www-data www-data
+# }

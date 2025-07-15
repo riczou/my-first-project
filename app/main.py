@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import engine, Base
-from .api import auth, users, platforms, connections
+from .api import auth, users, platforms, connections, companies, resumes, analytics, referrals, payments, admin
 from .models import *
 
 # Create database tables
@@ -66,6 +66,12 @@ app.include_router(auth.router, prefix="/auth", tags=["authentication"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(platforms.router, prefix="/platforms", tags=["platforms"])
 app.include_router(connections.router, prefix="/connections", tags=["connections"])
+app.include_router(companies.router, prefix="/companies", tags=["companies"])
+app.include_router(resumes.router, prefix="/resumes", tags=["resumes"])
+app.include_router(analytics.router, prefix="/analytics", tags=["analytics"])
+app.include_router(referrals.router, prefix="/referrals", tags=["referrals"])
+app.include_router(payments.router, prefix="/payments", tags=["payments"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 @app.get("/")
 def read_root():

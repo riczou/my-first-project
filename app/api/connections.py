@@ -211,7 +211,28 @@ def upload_csv_connections(
         # Read CSV content
         content = file.file.read()
         csv_data = content.decode('utf-8')
-        csv_reader = csv.DictReader(io.StringIO(csv_data))
+        
+        # Handle LinkedIn CSV format which starts with Notes section
+        lines = csv_data.split('\n')
+        header_found = False
+        clean_lines = []
+        
+        for line in lines:
+            # Skip empty lines and LinkedIn notes section
+            if not line.strip():
+                continue
+            # Look for actual CSV header (must contain comma-separated headers)
+            if not header_found and ',' in line:
+                # Check if this looks like a real CSV header line (multiple comma-separated values)
+                parts = [part.strip().strip('"') for part in line.split(',')]
+                if len(parts) >= 3 and any(header.lower() in [p.lower() for p in parts] for header in ['first name', 'last name', 'company', 'position', 'name']):
+                    header_found = True
+            if header_found:
+                clean_lines.append(line)
+        
+        # Rejoin cleaned CSV data
+        clean_csv_data = '\n'.join(clean_lines)
+        csv_reader = csv.DictReader(io.StringIO(clean_csv_data))
         
         imported_count = 0
         errors = []
@@ -219,13 +240,18 @@ def upload_csv_connections(
         for row_num, row in enumerate(csv_reader, start=2):  # start=2 because row 1 is header
             try:
                 # Map CSV columns to our fields (flexible mapping)
+                # Handle LinkedIn export format specifically: "First Name,Last Name,URL,Email Address,Company,Position,Connected On"
                 name = _get_csv_value(row, ['name', 'full_name', 'contact_name', 'first_name'])
-                if not name and 'first_name' in row and 'last_name' in row:
-                    name = f"{row.get('first_name', '')} {row.get('last_name', '')}".strip()
+                if not name:
+                    # LinkedIn format: combine First Name + Last Name
+                    first = _get_csv_value(row, ['first_name', 'first name'])
+                    last = _get_csv_value(row, ['last_name', 'last name']) 
+                    if first or last:
+                        name = f"{first or ''} {last or ''}".strip()
                 
                 company = _get_csv_value(row, ['company', 'organization', 'employer', 'current_company'])
                 title = _get_csv_value(row, ['title', 'position', 'job_title', 'role'])
-                email = _get_csv_value(row, ['email', 'email_address'])
+                email = _get_csv_value(row, ['email', 'email_address', 'email address'])
                 location = _get_csv_value(row, ['location', 'city', 'address'])
                 profile_url = _get_csv_value(row, ['profile_url', 'linkedin_url', 'url', 'link'])
                 

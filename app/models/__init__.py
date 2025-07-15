@@ -1,5 +1,8 @@
 from .user import User, Platform, UserPlatformAccount
 from .connection import Connection, Company, JobOpportunity, ConnectionJobMatch
+from .subscription import Subscription, PaymentHistory
+from .referral import Referral, ReferralReward, ReferralStats
+from .analytics import NetworkAnalytics, ConnectionInsight, NetworkRecommendation, DiscoveryProfile, AnalyticsEvent
 
 __all__ = [
     "User",
@@ -8,5 +11,15 @@ __all__ = [
     "Connection",
     "Company",
     "JobOpportunity",
-    "ConnectionJobMatch"
+    "ConnectionJobMatch",
+    "Subscription",
+    "PaymentHistory",
+    "Referral",
+    "ReferralReward", 
+    "ReferralStats",
+    "NetworkAnalytics",
+    "ConnectionInsight",
+    "NetworkRecommendation",
+    "DiscoveryProfile",
+    "AnalyticsEvent"
 ]
