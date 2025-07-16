@@ -22,7 +22,7 @@ import {
   MapPin,
   Briefcase
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "../../lib/api-client";
 import type { Connection, User } from "@/types";
 
 interface CompanyAnalytics {

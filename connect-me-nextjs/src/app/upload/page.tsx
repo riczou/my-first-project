@@ -22,7 +22,7 @@ import {
   MapPin,
   Loader2
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "../../lib/api-client";
 import type { User } from "@/types";
 
 interface UploadResult {

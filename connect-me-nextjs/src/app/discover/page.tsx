@@ -31,7 +31,7 @@ import {
   ExternalLink,
   Sparkles
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "../../lib/api-client";
 import type { User } from "@/types";
 
 interface PlatformProfile {
