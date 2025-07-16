@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Network, Loader2, ArrowLeft } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
-import type { LoginCredentials } from "@/lib/api-client";
+import { apiClient } from "../api-client";
+import type { LoginCredentials } from "../api-client";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<LoginCredentials>({

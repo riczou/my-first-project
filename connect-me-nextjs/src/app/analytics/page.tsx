@@ -42,7 +42,7 @@ import {
   Calendar,
   DollarSign
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "../api-client";
 import type { Connection, User } from "@/types";
 
 interface NetworkAnalytics {

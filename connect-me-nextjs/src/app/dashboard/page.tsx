@@ -21,7 +21,7 @@ import {
   LogOut,
   Loader2
 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "../api-client";
 import type { User, DashboardStats } from "@/types";
 
 export default function DashboardPage() {
