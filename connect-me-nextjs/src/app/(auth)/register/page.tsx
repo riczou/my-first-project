@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Network, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
-import { authHelpers, dbHelpers } from "@/lib/supabase";
-import type { RegisterData } from "@/types";
+import { apiClient } from "@/lib/api-client";
+import type { RegisterData } from "@/lib/api-client";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState<RegisterData>({
@@ -72,34 +72,20 @@ export default function RegisterPage() {
     }
 
     try {
-      // Sign up with Supabase Auth with email confirmation
-      const { data, error } = await authHelpers.signUp(
-        formData.email,
-        formData.password,
-        {
-          username: formData.username,
-          first_name: formData.first_name,
-          last_name: formData.last_name
-        }
-      );
+      // Register with our API
+      const response = await apiClient.register(formData);
 
-      if (error) {
-        setError(error.message);
+      if (response.error) {
+        setError(response.error);
         return;
       }
 
-      if (data.user) {
-        // If user needs email confirmation
-        if (!data.user.email_confirmed_at) {
-          setSuccess(true);
-          return;
-        }
-        
-        // Create user profile in our users table
-        await dbHelpers.createUserProfile(data.user);
-        
-        // User is immediately confirmed, redirect to upload
-        router.push("/upload");
+      if (response.data) {
+        // Registration successful
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
       }
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");

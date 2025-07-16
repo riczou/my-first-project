@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Network, Loader2, ArrowLeft } from "lucide-react";
-import { authHelpers } from "@/lib/supabase";
-import type { LoginCredentials } from "@/types";
+import { apiClient } from "@/lib/api-client";
+import type { LoginCredentials } from "@/lib/api-client";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState<LoginCredentials>({
@@ -36,23 +36,16 @@ export default function LoginPage() {
 
     try {
       if (formData.username && formData.password) {
-        // Note: Supabase auth uses email, so username should be email format
-        const { data, error } = await authHelpers.signIn(formData.username, formData.password);
+        const response = await apiClient.login(formData);
 
-        if (error) {
-          setError(error.message);
+        if (response.error) {
+          setError(response.error);
           return;
         }
 
-        if (data.user) {
-          // Check if user's email is confirmed
-          if (!data.user.email_confirmed_at) {
-            setError("Please check your email and click the confirmation link before signing in.");
-            return;
-          }
-          
-          // Redirect directly to upload page (core value)
-          router.push("/upload");
+        if (response.data) {
+          // Login successful, redirect to dashboard
+          router.push("/dashboard");
           return;
         }
       } else {
