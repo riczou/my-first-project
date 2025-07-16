@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Network, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
-import { apiClient } from "../../../lib/api-client";
-import type { RegisterData } from "../../../lib/api-client";
+import { apiClient } from "@/lib/api-client";
+import type { RegisterData } from "@/lib/api-client";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState<RegisterData>({

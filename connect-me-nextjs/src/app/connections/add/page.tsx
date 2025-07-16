@@ -22,7 +22,7 @@ import {
   Loader2,
   Users
 } from "lucide-react";
-import { apiClient } from "../../../lib/api-client";
+import { apiClient } from "@/lib/api-client";
 import type { User } from "@/types";
 
 interface ConnectionForm {

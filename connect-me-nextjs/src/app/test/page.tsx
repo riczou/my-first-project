@@ -16,7 +16,7 @@ import {
   Users,
   Building2
 } from "lucide-react";
-import { apiClient } from "../../lib/api-client";
+import { apiClient } from "@/lib/api-client";
 
 interface TestResult {
   name: string;
