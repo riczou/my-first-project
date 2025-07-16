@@ -29,9 +29,9 @@ class Resume(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
-    user = relationship("User", back_populates="resumes")
-    job_matches = relationship("JobMatch", back_populates="resume")
+    # Relationships - temporarily disabled for basic auth testing
+    # user = relationship("User", back_populates="resumes")
+    # job_matches = relationship("JobMatch", back_populates="resume")
 
 
 class JobMatch(Base):
@@ -62,8 +62,8 @@ class JobMatch(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
-    resume = relationship("Resume", back_populates="job_matches")
+    # Relationships - temporarily disabled for basic auth testing
+    # resume = relationship("Resume", back_populates="job_matches")
 
 
 class Skill(Base):

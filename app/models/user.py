@@ -25,15 +25,9 @@ class User(Base):
     last_recommendation_sent = Column(DateTime(timezone=True))
     referral_code = Column(String, unique=True, nullable=True)
     
-    # Relationships
-    platform_accounts = relationship("UserPlatformAccount", back_populates="user")
-    connections = relationship("Connection", back_populates="user")
-    resumes = relationship("Resume", back_populates="user")
-    subscription = relationship("Subscription", back_populates="user", uselist=False)
-    referrals_made = relationship("Referral", foreign_keys="Referral.referrer_id", back_populates="referrer")
-    referrals_received = relationship("Referral", foreign_keys="Referral.referred_user_id", back_populates="referred_user")
-    referral_stats = relationship("ReferralStats", back_populates="user", uselist=False)
-    network_analytics = relationship("NetworkAnalytics", back_populates="user", uselist=False)
+    # Relationships - temporarily disabled for basic auth testing
+    # platform_accounts = relationship("UserPlatformAccount", back_populates="user")
+    # connections = relationship("Connection", back_populates="user")
 
 
 class Platform(Base):
@@ -45,9 +39,9 @@ class Platform(Base):
     is_active = Column(Boolean, default=True)
     scraping_enabled = Column(Boolean, default=False)
     
-    # Relationships
-    user_accounts = relationship("UserPlatformAccount", back_populates="platform")
-    connections = relationship("Connection", back_populates="platform")
+    # Relationships - temporarily disabled for basic auth testing
+    # user_accounts = relationship("UserPlatformAccount", back_populates="platform")
+    # connections = relationship("Connection", back_populates="platform")
 
 
 class UserPlatformAccount(Base):
@@ -62,6 +56,6 @@ class UserPlatformAccount(Base):
     last_sync_at = Column(DateTime(timezone=True))
     is_active = Column(Boolean, default=True)
     
-    # Relationships
-    user = relationship("User", back_populates="platform_accounts")
-    platform = relationship("Platform", back_populates="user_accounts")
+    # Relationships - temporarily disabled for basic auth testing
+    # user = relationship("User", back_populates="platform_accounts")
+    # platform = relationship("Platform", back_populates="user_accounts")

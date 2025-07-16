@@ -20,10 +20,10 @@ class Connection(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relationships
-    user = relationship("User", back_populates="connections")
-    platform = relationship("Platform", back_populates="connections")
-    job_matches = relationship("ConnectionJobMatch", back_populates="connection")
+    # Relationships - temporarily disabled for basic auth testing
+    # user = relationship("User", back_populates="connections")
+    # platform = relationship("Platform", back_populates="connections")
+    # job_matches = relationship("ConnectionJobMatch", back_populates="connection")
 
 
 class Company(Base):
@@ -37,8 +37,8 @@ class Company(Base):
     website = Column(String)
     linkedin_url = Column(String)
     
-    # Relationships
-    job_opportunities = relationship("JobOpportunity", back_populates="company")
+    # Relationships - temporarily disabled for basic auth testing
+    # job_opportunities = relationship("JobOpportunity", back_populates="company")
 
 
 class JobOpportunity(Base):
@@ -56,9 +56,9 @@ class JobOpportunity(Base):
     source_url = Column(String)
     is_active = Column(Boolean, default=True)
     
-    # Relationships
-    company = relationship("Company", back_populates="job_opportunities")
-    connection_matches = relationship("ConnectionJobMatch", back_populates="job_opportunity")
+    # Relationships - temporarily disabled for basic auth testing
+    # company = relationship("Company", back_populates="job_opportunities")
+    # connection_matches = relationship("ConnectionJobMatch", back_populates="job_opportunity")
 
 
 class ConnectionJobMatch(Base):
@@ -71,6 +71,6 @@ class ConnectionJobMatch(Base):
     match_score = Column(Float, nullable=False)  # 0-100 scale
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Relationships
-    connection = relationship("Connection", back_populates="job_matches")
-    job_opportunity = relationship("JobOpportunity", back_populates="connection_matches")
+    # Relationships - temporarily disabled for basic auth testing
+    # connection = relationship("Connection", back_populates="job_matches")
+    # job_opportunity = relationship("JobOpportunity", back_populates="connection_matches")

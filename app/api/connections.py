@@ -237,6 +237,16 @@ def upload_csv_connections(
         imported_count = 0
         errors = []
         
+        # First pass: collect all existing connection names for this user to avoid duplicates
+        existing_names = set()
+        existing_connections = db.query(Connection.connection_name).filter(
+            Connection.user_id == current_user.id
+        ).all()
+        existing_names = {conn.connection_name for conn in existing_connections}
+        
+        # Second pass: collect all new connections to bulk insert
+        new_connections = []
+        
         for row_num, row in enumerate(csv_reader, start=2):  # start=2 because row 1 is header
             try:
                 # Map CSV columns to our fields (flexible mapping)
@@ -260,34 +270,34 @@ def upload_csv_connections(
                     errors.append(f"Row {row_num}: Missing name")
                     continue
                 
-                # Check if connection already exists
-                existing = db.query(Connection).filter(
-                    Connection.user_id == current_user.id,
-                    Connection.connection_name == name
-                ).first()
-                
-                if existing:
+                # Check if connection already exists (using in-memory set for speed)
+                if name in existing_names:
                     continue  # Skip duplicates
                 
-                # Create new connection
-                new_connection = Connection(
-                    user_id=current_user.id,
-                    platform_id=None,  # CSV import doesn't have platform
-                    connection_name=name,
-                    connection_profile_url=profile_url or "",
-                    connection_title=title or "",
-                    connection_company=company or "",
-                    connection_location=location or "",
-                    relationship_strength=3,  # Default value
-                    mutual_connections_count=0  # Not available in CSV
-                )
+                # Add to new connections list
+                new_connections.append({
+                    'user_id': current_user.id,
+                    'platform_id': None,  # CSV import doesn't have platform
+                    'connection_name': name,
+                    'connection_profile_url': profile_url or "",
+                    'connection_title': title or "",
+                    'connection_company': company or "",
+                    'connection_location': location or "",
+                    'relationship_strength': 3,  # Default value
+                    'mutual_connections_count': 0  # Not available in CSV
+                })
                 
-                db.add(new_connection)
+                # Also add to existing_names to prevent duplicates within this CSV
+                existing_names.add(name)
                 imported_count += 1
                 
             except Exception as e:
                 errors.append(f"Row {row_num}: {str(e)}")
                 continue
+        
+        # Bulk insert all new connections at once
+        if new_connections:
+            db.bulk_insert_mappings(Connection, new_connections)
         
         db.commit()
         
