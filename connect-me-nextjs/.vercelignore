@@ -1,0 +1,5 @@
+# Ignore cache and build artifacts
+.next
+node_modules
+.vercel
+*.log
