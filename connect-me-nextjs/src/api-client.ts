@@ -117,25 +117,21 @@ class ApiClient {
 
   // Authentication methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<{ access_token: string; token_type: string }>> {
-    const formData = new FormData();
-    formData.append('username', credentials.username);
-    formData.append('password', credentials.password);
-
     try {
-      const response = await fetch(`${this.baseURL}/auth/token`, {
-        method: 'POST',
-        body: formData,
-      });
+      console.log('🔐 Attempting login with credentials:', { username: credentials.username });
+      
+      const response = await this.post<{ access_token: string; token_type: string }>('/auth/login', credentials);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Login failed');
+      if (response.error) {
+        console.error('❌ Login failed:', response.error);
+        return response;
       }
 
-      this.setToken(data.access_token);
-      return { data };
+      console.log('✅ Login successful, setting token');
+      this.setToken(response.data!.access_token);
+      return response;
     } catch (error) {
+      console.error('💥 Login error:', error);
       return { error: error instanceof Error ? error.message : 'Login failed' };
     }
   }
@@ -160,7 +156,13 @@ class ApiClient {
   clearToken(): void {
     this.token = null;
     if (typeof window !== 'undefined') {
+      // Clear the specific token and any related data
       localStorage.removeItem('authToken');
+      localStorage.removeItem('user_session');
+      
+      // Also clear from sessionStorage if it exists there
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('user_session');
     }
   }
 
@@ -187,6 +189,45 @@ class ApiClient {
 
   async deleteConnection(id: number): Promise<ApiResponse<void>> {
     return this.delete<void>(`/connections/${id}`);
+  }
+
+  async deleteAllConnections(): Promise<ApiResponse<{ message: string; deleted_count: number }>> {
+    return this.delete<{ message: string; deleted_count: number }>('/connections');
+  }
+
+  // CSV Upload method
+  async uploadCSV(file: File): Promise<ApiResponse<{ message: string; imported_count: number; errors: string[]; total_errors: number }>> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      console.log('📤 Starting CSV upload to backend...', { fileName: file.name, fileSize: file.size });
+      
+      const headers: Record<string, string> = {};
+      if (this.token) {
+        headers['Authorization'] = `Bearer ${this.token}`;
+      }
+
+      const response = await fetch(`${this.baseURL}/connections/upload-csv`, {
+        method: 'POST',
+        body: formData,
+        headers,
+      });
+
+      const data = await response.json();
+      console.log('📥 CSV upload response:', data);
+
+      if (!response.ok) {
+        console.error('❌ CSV upload failed:', data);
+        return { error: data.detail || `HTTP ${response.status}: ${response.statusText}` };
+      }
+
+      console.log('✅ CSV upload successful:', data);
+      return { data };
+    } catch (error) {
+      console.error('💥 CSV upload error:', error);
+      return { error: error instanceof Error ? error.message : 'CSV upload failed' };
+    }
   }
 
   // Company methods
