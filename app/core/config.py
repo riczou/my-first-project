@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     app_name: str = "Networking App Backend"
     debug: bool = Field(default=False, env="DEBUG")
     database_url: str = Field(default="sqlite:///./networking_app.db", env="DATABASE_URL")
-    secret_key: str = Field(default="Rjk5v1WIN7HYqhwLMneAtAiY-hG4KGMUiHUxUaYEF3M", env="SECRET_KEY")
+    secret_key: str = Field(env="SECRET_KEY", description="JWT secret key - MUST be set in environment variables")
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     

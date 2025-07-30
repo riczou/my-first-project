@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import engine, Base
+from .core.security_middleware import limiter, custom_rate_limit_handler
+from slowapi.errors import RateLimitExceeded
 from .api import auth, users, platforms, connections, companies, resumes, analytics, referrals, payments, admin
 from .models import *
 
@@ -55,6 +57,10 @@ app = FastAPI(
         }
     ]
 )
+
+# Add security middleware
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
 # Add CORS middleware with secure origins
 app.add_middleware(

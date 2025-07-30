@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Upload Test</title>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let authToken = null;
+
+        // Add CORS headers and authentication
+        async function apiRequest(endpoint, options = {}) {
+            const headers = {
+                ...options.headers
+            };
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers
+            });
+            
+            return response;
+        }
+
+        // Login to get auth token
+        async function login() {
+            console.log('🔐 Logging in...');
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: 'admin',
+                    password: 'admin123'
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                authToken = data.access_token;
+                console.log('✅ Login successful');
+                document.getElementById('status').innerText = 'Logged in successfully';
+                document.getElementById('uploadSection').style.display = 'block';
+            } else {
+                console.error('❌ Login failed');
+                document.getElementById('status').innerText = 'Login failed';
+            }
+        }
+
+        // Upload CSV file
+        async function uploadCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a CSV file');
+                return;
+            }
+            
+            console.log('📤 Uploading CSV:', file.name);
+            document.getElementById('uploadStatus').innerText = 'Uploading...';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`${API_BASE}/connections/upload-csv`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                console.log('📥 Upload result:', result);
+                
+                if (response.ok) {
+                    document.getElementById('uploadStatus').innerText = 
+                        `✅ Success! Imported ${result.imported_count} connections`;
+                    
+                    // Now fetch and display connections
+                    await fetchConnections();
+                } else {
+                    document.getElementById('uploadStatus').innerText = 
+                        `❌ Error: ${result.detail || 'Upload failed'}`;
+                }
+            } catch (error) {
+                console.error('💥 Upload error:', error);
+                document.getElementById('uploadStatus').innerText = 
+                    `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Fetch and display connections
+        async function fetchConnections() {
+            console.log('📋 Fetching connections...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/connections/`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const connections = await response.json();
+                    console.log('✅ Fetched connections:', connections.length);
+                    displayConnections(connections);
+                } else {
+                    console.error('❌ Failed to fetch connections');
+                    document.getElementById('connections').innerText = 'Failed to fetch connections';
+                }
+            } catch (error) {
+                console.error('💥 Fetch error:', error);
+                document.getElementById('connections').innerText = `Error: ${error.message}`;
+            }
+        }
+
+        // Display connections in the UI
+        function displayConnections(connections) {
+            const container = document.getElementById('connections');
+            
+            if (connections.length === 0) {
+                container.innerHTML = '<p>No connections found</p>';
+                return;
+            }
+            
+            let html = `<h3>Found ${connections.length} connections:</h3>`;
+            
+            // Show last 5 connections (most recent uploads)
+            const recentConnections = connections.slice(-5);
+            
+            html += '<table border="1" cellpadding="10"><tr><th>Name</th><th>Company</th><th>Title</th><th>URL</th><th>Raw Data</th></tr>';
+            
+            recentConnections.forEach((conn, index) => {
+                html += `<tr>
+                    <td><strong>${conn.connection_name || 'MISSING NAME'}</strong></td>
+                    <td>${conn.connection_company || 'N/A'}</td>
+                    <td>${conn.connection_title || 'N/A'}</td>
+                    <td>${conn.connection_profile_url ? '<a href="' + conn.connection_profile_url + '" target="_blank">Link</a>' : 'N/A'}</td>
+                    <td><pre style="font-size: 10px; max-width: 200px; overflow: auto;">${JSON.stringify(conn, null, 2)}</pre></td>
+                </tr>`;
+            });
+            html += '</table>';
+            
+            if (connections.length > 5) {
+                html += `<p>Showing last 5 of ${connections.length} total connections</p>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Initialize when page loads
+        window.onload = function() {
+            document.getElementById('loginBtn').onclick = login;
+            document.getElementById('uploadBtn').onclick = uploadCSV;
+            document.getElementById('fetchBtn').onclick = fetchConnections;
+        };
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; margin: 5px; }
+        #connections li { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>CSV Upload Test</h1>
+    
+    <div class="section">
+        <h2>1. Login</h2>
+        <button id="loginBtn">Login as Admin</button>
+        <div id="status">Not logged in</div>
+    </div>
+    
+    <div class="section" id="uploadSection" style="display: none;">
+        <h2>2. Upload CSV</h2>
+        <input type="file" id="csvFile" accept=".csv">
+        <button id="uploadBtn">Upload CSV</button>
+        <div id="uploadStatus">Ready to upload</div>
+    </div>
+    
+    <div class="section">
+        <h2>3. View Connections</h2>
+        <button id="fetchBtn">Fetch Connections</button>
+        <div id="connections">No connections loaded</div>
+    </div>
+</body>
+</html>

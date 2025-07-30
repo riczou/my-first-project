@@ -25,9 +25,9 @@ class User(Base):
     last_recommendation_sent = Column(DateTime(timezone=True))
     referral_code = Column(String, unique=True, nullable=True)
     
-    # Relationships - temporarily disabled for basic auth testing
-    # platform_accounts = relationship("UserPlatformAccount", back_populates="user")
-    # connections = relationship("Connection", back_populates="user")
+    # Relationships - Re-enabled for full functionality
+    platform_accounts = relationship("UserPlatformAccount", back_populates="user")
+    connections = relationship("Connection", back_populates="user")
 
 
 class Platform(Base):
@@ -39,9 +39,9 @@ class Platform(Base):
     is_active = Column(Boolean, default=True)
     scraping_enabled = Column(Boolean, default=False)
     
-    # Relationships - temporarily disabled for basic auth testing
-    # user_accounts = relationship("UserPlatformAccount", back_populates="platform")
-    # connections = relationship("Connection", back_populates="platform")
+    # Relationships - Re-enabled for full functionality
+    user_accounts = relationship("UserPlatformAccount", back_populates="platform")
+    connections = relationship("Connection", back_populates="platform")
 
 
 class UserPlatformAccount(Base):
@@ -56,6 +56,6 @@ class UserPlatformAccount(Base):
     last_sync_at = Column(DateTime(timezone=True))
     is_active = Column(Boolean, default=True)
     
-    # Relationships - temporarily disabled for basic auth testing
-    # user = relationship("User", back_populates="platform_accounts")
-    # platform = relationship("Platform", back_populates="user_accounts")
+    # Relationships - Re-enabled for full functionality
+    user = relationship("User", back_populates="platform_accounts")
+    platform = relationship("Platform", back_populates="user_accounts")
